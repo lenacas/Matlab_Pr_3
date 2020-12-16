@@ -58,27 +58,27 @@ end
 
 mmHg_Pa = 0.00750062; % change of unit --> I don't know which unit it is
 
+figure; title("Single beats #1");
 
-figure; title("Single beats #1");hold on;
+
 for ii = 1:length(struct(1).location)-1
+    hold on; 
     plot(struct(1).singlebeat(ii).time,struct(1).singlebeat(ii).signal*mmHg_Pa); xlabel("time (s)")
-    % ylim([struct(1).dbp struct(1).sbp]) --> gggggrrrr, why does it not
-    % work?
+    %axis([0 1 struct(1).dbp struct(1).sbp])
 end
-
 
 figure; title("Single beats #2");
 for ii = 1:length(struct(2).location)-1
     hold on; 
     plot(struct(2).singlebeat(ii).time,struct(2).singlebeat(ii).signal*mmHg_Pa); xlabel("time (s)")
-    % ylim([struct(2).dbp struct(2).sbp])
+    %ylim([struct(2).dbp struct(2).sbp])
 end
 
 figure; title("Single beats #3");
 for ii = 1:length(struct(3).location)-1
     hold on; 
     plot(struct(3).singlebeat(ii).time,struct(3).singlebeat(ii).signal*mmHg_Pa); xlabel("time (s)")
-    % ylim([struct(3).dbp struct(3).sbp])
+    %ylim([struct(3).dbp struct(3).sbp])
 end
 
 
