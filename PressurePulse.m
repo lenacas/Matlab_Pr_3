@@ -45,25 +45,27 @@ subplot(3,1,3);plot(t,struct(3).pressure,t,struct(3).x); xlabel("time (s)")
 % beat starts. 
 % 1 Pa = 133,322 mmHg
 
+
 for i = 1:3
     
 [struct(i).peak,struct(i).location] = findpeaks(-struct(i).x,t,'MinPeakDistance', 0.5);
 struct(i).location = struct(i).location *fs/1;
 
 for ii = 1:(length(struct(i).location)-1)
-    struct(i).singlebeat(ii).signal = struct(i).x(struct(i).location(ii):struct(i).location(ii+1));
+    a = struct(i).location(ii);
+    b = struct(i).location(ii+1);
+    struct(i).singlebeat(ii).signal = struct(i).x(round(a):round(b));           % round to create integer
     struct(i).singlebeat(ii).time = (0:length(struct(i).singlebeat(ii).signal)-1) *1/fs;
 end
 end 
 
-mmHg_Pa = 0.00750062; % change of unit --> I don't know which unit it is
+mmHg_Pa = 0.02; % change of unit --> I don't know which unit it is
 
 
 figure; title("Single beats #1");hold on;
 for ii = 1:length(struct(1).location)-1
     plot(struct(1).singlebeat(ii).time,struct(1).singlebeat(ii).signal*mmHg_Pa); xlabel("time (s)")
-    % ylim([struct(1).dbp struct(1).sbp]) --> gggggrrrr, why does it not
-    % work?
+    ylim([struct(1).dbp struct(1).sbp])
 end
 
 
@@ -71,16 +73,15 @@ figure; title("Single beats #2");
 for ii = 1:length(struct(2).location)-1
     hold on; 
     plot(struct(2).singlebeat(ii).time,struct(2).singlebeat(ii).signal*mmHg_Pa); xlabel("time (s)")
-    % ylim([struct(2).dbp struct(2).sbp])
+    ylim([struct(2).dbp struct(2).sbp])
 end
 
 figure; title("Single beats #3");
 for ii = 1:length(struct(3).location)-1
     hold on; 
     plot(struct(3).singlebeat(ii).time,struct(3).singlebeat(ii).signal*mmHg_Pa); xlabel("time (s)")
-    % ylim([struct(3).dbp struct(3).sbp])
+    ylim([struct(3).dbp struct(3).sbp])
 end
-
 
 
 % figure; hold on
