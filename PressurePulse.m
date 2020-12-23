@@ -91,3 +91,60 @@ end
 % xlabel("time (s)")
 % this was just for testing if it fits
 
+%% 3-point-moving-average filter
+
+
+
+%% Systolic peak (absolute maximum)
+for i = 1:3
+for ii = 1:length(struct(i).location)-1
+    [struct(i).singlebeat(ii).max,struct(i).singlebeat(ii).locmax] = max(struct(i).singlebeat(ii).signal);
+end
+end
+
+%% Dicrotic notch (first local minimum after systolic peak)
+for i = 1:3
+for ii = 1:length(struct(i).location)-1
+    [struct(i).singlebeat(ii).dicrotic,struct(i).singlebeat(ii).locdic] = findpeaks(-struct(i).singlebeat(ii).signal,struct(i).singlebeat(ii).time,'MinPeakProminence',100);
+end
+end
+
+
+%%%%%%%%%%%%%%%% TEST PLOTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure; title("Single beats #1");hold on;
+for ii = 1:length(struct(1).location)-1
+    plot(struct(1).singlebeat(ii).time,struct(1).singlebeat(ii).signal); xlabel("time (s)")
+    plot((struct(1).singlebeat(ii).locmax-1)/fs,struct(1).singlebeat(ii).max, 'x');
+    plot(struct(1).singlebeat(ii).locdic,-struct(1).singlebeat(ii).dicrotic, 'o');
+end
+
+
+figure; title("Single beats #2");
+for ii = 1:length(struct(2).location)-1
+    hold on; 
+    plot(struct(2).singlebeat(ii).time,struct(2).singlebeat(ii).signal); xlabel("time (s)"),
+    plot((struct(2).singlebeat(ii).locmax-1)/fs,struct(2).singlebeat(ii).max, 'x');
+    plot(struct(2).singlebeat(ii).locdic,-struct(2).singlebeat(ii).dicrotic, 'o');
+end
+
+figure; title("Single beats #3");
+for ii = 1:length(struct(3).location)-1
+    hold on; 
+    plot(struct(3).singlebeat(ii).time,struct(3).singlebeat(ii).signal); xlabel("time (s)"),
+    plot((struct(3).singlebeat(ii).locmax-1)/fs,struct(3).singlebeat(ii).max, 'x');
+    plot(struct(3).singlebeat(ii).locdic,-struct(3).singlebeat(ii).dicrotic, 'o');
+end
+
+%% Ejection duration 
+% in seconds
+struct(1).ejtimeav = 0;
+struct(2).ejtimeav = 0;
+struct(3).ejtimeav = 0;
+
+for i = 1:3
+for ii = 1:length(struct(i).location)-1
+    struct(i).singlebeat(ii).ejtime = struct(i).singlebeat(ii).locdic;
+    struct(i).ejtimeav = struct(i).ejtimeav + struct(i).singlebeat(ii).ejtime;
+end
+    struct(i).ejtimeav = struct(i).ejtimeav/ii;
+end
