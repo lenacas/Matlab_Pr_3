@@ -29,7 +29,16 @@ end
 for i = 1:3
     [peak, location] = findpeaks(-struct(i).pressure,t,'MinPeakDistance', 0.5);
     location = location *fs/1;
-for j = 1:(length(location)-1)
+    
+%     % visualisation test
+%     figure; hold on;
+%     title("Original singnal ID#" +num2str(i));
+%     plot(t,struct(i).pressure);
+%     plot(location*1/fs,-peak,'*');
+% shows, that the last beat of the fist signal (ID#1) is not finished, therefore it will not be
+% considered
+    
+for j = 1:(length(location)-2)
     %filtered single beats creation by cutting at lowest values  and saved to struct
     struct(i).s_beat(j).signal = struct(i).pressure(round(location(j)):round(location(j+1))); % round to create integer
     struct(i).s_beat(j).time = (0:length(struct(i).s_beat(j).signal)-1) *1/fs;
@@ -40,6 +49,13 @@ end
 for i = 1:3
     [peak, location] = findpeaks(-struct(i).filtered_signal,t,'MinPeakDistance', 0.45);
     location = location *fs/1;
+    
+%      % visualisation test
+%     figure; hold on;
+%     title("Filtered singnal ID#" +num2str(i));
+%     plot(t,struct(i).filtered_signal);
+%     plot(location*1/fs,-peak,'*');
+    
 for j = 1:(length(location)-1)
     %filtered single beats creation and saved to struct
     struct(i).f_s_beat(j).signal = struct(i).filtered_signal(round(location(j)):round(location(j+1))); % round to create integer
@@ -47,9 +63,6 @@ for j = 1:(length(location)-1)
 end
 end 
 
-
-%% one peak of the first filtered signal is missing and i cant fix it!!
-%im fkn going mad over this!!! 
 
 %% 3. Scale signal
 % by function: subtract minimum, divide by max, multiply with delta bp, 
@@ -85,7 +98,7 @@ end
     struct(i).dcrotic_avg=temp/j;
 end
 
-%% Visualization 
+% % Visualization 
 % for i=1:3
 %     figure; hold on;
 %     title("Filtered single beats #" +num2str(j));
@@ -130,20 +143,21 @@ for i=1:3
 end
 
 %% 9.Bland Altman Plots
-% Compare each beat for each patient -average required
+% Compare each beat for each patient - average required
+% 
+% for i=1:3
+%     for j = 1:(length(struct(i).f_s_beat))
+%         temp1 = struct(i).s_beat(j).signal;
+%         temp2 = struct(i).f_s_beat(j).signal;
+%         a = max(numel(temp1),numel(temp2));
+%         temp1(end+1:a)=nan;
+%         temp2(end+1:a)=nan;
+%         figure;
+%         BlandAltman(temp1,temp2,3,i,j);
+%     end
+% end 
 
-for i=1:3
-    for j = 1:(length(struct(i).f_s_beat))
-        temp1 = struct(i).s_beat(j).signal;
-        temp2 = struct(i).f_s_beat(j).signal;
-        a = max(numel(temp1),numel(temp2));
-        temp1(end+1:a)=nan;
-        temp2(end+1:a)=nan;
-        figure;
-        BlandAltman(temp1,temp2,3,i,j);
-    end
-end 
-
+% needs comments!
 
 %% 10.Average filtered single beats
 
