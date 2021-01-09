@@ -25,42 +25,35 @@ end
 % using findpeaks, we detect the lowest values, where we assume a single
 % beat starts.
 
-% Split Unfiltered Signal (task 8.)
+% Split Filtered Signal
 for i = 1:3
+    [peak, location_f] = findpeaks(-struct(i).filtered_signal,t,'MinPeakDistance', 0.45);
+    location_f = location_f *fs/1;
+   
+for j = 1:(length(location_f)-1)
+    %filtered single beats creation and saved to struct
+    struct(i).f_s_beat(j).signal = struct(i).filtered_signal(round(location_f(j)):round(location_f(j+1))); % round to create integer
+    struct(i).f_s_beat(j).time = (0:length(struct(i).f_s_beat(j).signal)-1) *1/fs;
+end
+
+% Split Unfiltered Signal (task 8.)
     [peak, location] = findpeaks(-struct(i).pressure,t,'MinPeakDistance', 0.5);
     location = location *fs/1;
-    
-%     % visualisation test
-%     figure; hold on;
-%     title("Original singnal ID#" +num2str(i));
-%     plot(t,struct(i).pressure);
-%     plot(location*1/fs,-peak,'*');
-% shows, that the last beat of the fist signal (ID#1) is not finished, therefore it will not be
-% considered
-    
-for j = 1:(length(location)-2)
+
+    if length(location_f) == length(location)
+        for j = 1:(length(location)-1)
     %filtered single beats creation by cutting at lowest values  and saved to struct
     struct(i).s_beat(j).signal = struct(i).pressure(round(location(j)):round(location(j+1))); % round to create integer
     struct(i).s_beat(j).time = (0:length(struct(i).s_beat(j).signal)-1) *1/fs;
-end
-end 
-
-% Split Filtered Signal
-for i = 1:3
-    [peak, location] = findpeaks(-struct(i).filtered_signal,t,'MinPeakDistance', 0.45);
-    location = location *fs/1;
-    
-%      % visualisation test
-%     figure; hold on;
-%     title("Filtered singnal ID#" +num2str(i));
-%     plot(t,struct(i).filtered_signal);
-%     plot(location*1/fs,-peak,'*');
-    
-for j = 1:(length(location)-1)
-    %filtered single beats creation and saved to struct
-    struct(i).f_s_beat(j).signal = struct(i).filtered_signal(round(location(j)):round(location(j+1))); % round to create integer
-    struct(i).f_s_beat(j).time = (0:length(struct(i).f_s_beat(j).signal)-1) *1/fs;
-end
+        end
+    end
+    if length(location_f) ~= length(location)
+        for j = 1:(length(location)-2)
+    %filtered single beats creation by cutting at lowest values  and saved to struct
+    struct(i).s_beat(j).signal = struct(i).pressure(round(location(j)):round(location(j+1))); % round to create integer
+    struct(i).s_beat(j).time = (0:length(struct(i).s_beat(j).signal)-1) *1/fs;
+        end 
+    end
 end 
 
 
@@ -91,39 +84,20 @@ peakprominence=3;
 for i = 1:3
     temp=0;
 for j = 1:length(struct(i).f_s_beat)
-    [struct(i).f_s_beat(j).max,struct(i).f_s_beat(j).locmax] = max(struct(i).f_s_beat(j).signal);
-    [struct(i).f_s_beat(j).dicrotic,struct(i).f_s_beat(j).locdic] = findpeaks(-struct(i).f_s_beat(j).signal,struct(i).f_s_beat(j).time,'MinPeakProminence',peakprominence);
-    temp= temp+struct(i).f_s_beat(j).locdic;
+    [temp_max,f_s_locmax(i,j)] = max(struct(i).f_s_beat(j).signal);
+    [temp_dic,f_s_ejtimes(i,j)] = findpeaks(-struct(i).f_s_beat(j).signal,struct(i).f_s_beat(j).time,'MinPeakProminence',peakprominence);
+    temp= temp+f_s_ejtimes(i,j);
 end
-    struct(i).dcrotic_avg=temp/j;
 end
 
-% % Visualization 
-% for i=1:3
-%     figure; hold on;
-%     title("Filtered single beats #" +num2str(j));
-% for j = 1:length(struct(i).f_s_beat)-1
-%     plot(struct(i).f_s_beat(j).time,struct(i).f_s_beat(j).signal); 
-%     plot((struct(i).f_s_beat(j).locmax-1)/fs,struct(i).f_s_beat(j).max, 'x');
-%     plot(struct(i).f_s_beat(j).locdic,-struct(i).f_s_beat(j).dicrotic, 'o');
-%     xlabel("Time [s]"); ylabel("Pressure [mmHg]")
-% end
-%     figure; hold on; 
-%     title("Uniltered single beats #" +num2str(j));
-% for j = 1:length(struct(i).s_beat)-1
-%     plot(struct(i).s_beat(j).time,struct(i).s_beat(j).signal); 
-%     plot((struct(i).s_beat(j).locmax-1)/fs,struct(i).s_beat(j).max, 'x');
-%     plot(struct(i).s_beat(j).locdic,-struct(i).s_beat(j).dicrotic, 'o');
-%     xlabel("Time [s]"); ylabel("Pressure [mmHg]")
-% end
-% end
+f_s_locmax = f_s_locmax*1/fs;
 
 %% 7. Ejection Time
 % in seconds
 for i = 1:3
     struct(i).ejtimeav_f = 0;
 for j = 1:length(struct(i).f_s_beat)
-    struct(i).ejtimeav_f = struct(i).ejtimeav_f + struct(i).f_s_beat(j).locdic;
+    struct(i).ejtimeav_f = struct(i).ejtimeav_f + f_s_ejtimes(i,j);
 end
     struct(i).ejtimeav_f = struct(i).ejtimeav_f/j;
 end
@@ -135,29 +109,29 @@ for i=1:3
     for j = 1:(length(struct(i).s_beat))
         struct(i).s_beat(j).signal= scale_to_bp(struct(i).s_beat(j).signal,struct(i).sbp,struct(i).dbp);
         struct(i).s_beat(j).signal= filter(F,1,struct(i).s_beat(j).signal- struct(i).s_beat(j).signal(1))+struct(i).s_beat(j).signal(1);
-       [struct(i).s_beat(j).max,struct(i).s_beat(j).locmax] = max(struct(i).s_beat(j).signal);
-       [struct(i).s_beat(j).dicrotic,struct(i).s_beat(j).locdic] = findpeaks(-struct(i).s_beat(j).signal,struct(i).s_beat(j).time,'MinPeakProminence',peakprominence);
-        struct(i).ejtimeav = struct(i).ejtimeav + struct(i).s_beat(j).locdic;
+       [temp_max,s_locmax(i,j)] = max(struct(i).s_beat(j).signal);
+       [temp,s_ejtimes(i,j)] = findpeaks(-struct(i).s_beat(j).signal,struct(i).s_beat(j).time,'MinPeakProminence',peakprominence);
+       struct(i).ejtimeav = struct(i).ejtimeav + s_ejtimes(i,j);
     end
     struct(i).ejtimeav = struct(i).ejtimeav/j;
 end
 
+s_locmax = s_locmax*1/fs;
+
 %% 9.Bland Altman Plots
 % Compare each beat for each patient - average required
 % 
-% for i=1:3
-%     for j = 1:(length(struct(i).f_s_beat))
-%         temp1 = struct(i).s_beat(j).signal;
-%         temp2 = struct(i).f_s_beat(j).signal;
-%         a = max(numel(temp1),numel(temp2));
-%         temp1(end+1:a)=nan;
-%         temp2(end+1:a)=nan;
-%         figure;
-%         BlandAltman(temp1,temp2,3,i,j);
-%     end
-% end 
 
-% needs comments!
+for i=1:3
+        figure;
+        BlandAltman(s_locmax(i,1:length(struct(i).f_s_beat)),f_s_locmax(i,1:length(struct(i).f_s_beat)),2,i,'Location of Systolic Peak');
+        figure;
+        BlandAltman(s_ejtimes(i,1:length(struct(i).f_s_beat)),f_s_ejtimes(i,1:length(struct(i).f_s_beat)),2,i,'Ejection Time');
+end 
+
+% The differences are small. The mean of differences are for all three
+% patients in a range of milli seconds or even smaller (ejection time for #3). It shows,
+% that the used filter keeps the reliability of the original data
 
 %% 10.Average filtered single beats
 
@@ -205,31 +179,6 @@ for i=1:3
     yyaxis right;
     ylabel("Flow [%]")
     line([0 (InflectionPoint(i)-1)/fs],[0 100])
-    line ([(InflectionPoint(i)-1)/fs struct(i).dcrotic_avg],[100 0])
+    line ([(InflectionPoint(i)-1)/fs struct(i).ejtimeav_f],[100 0])
     legend("Averaged Signal","Pressure Flow")
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

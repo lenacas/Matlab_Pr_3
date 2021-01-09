@@ -133,16 +133,16 @@ end
 % Compare each beat for each patient -average required, maybe perform 10.
 % prior and use code for unfiltered signal
 
-for i=1:3
-    for j = 1:(length(struct(i).f_s_beat))
-        temp1 = struct(i).s_beat(j).signal;
-        temp2 = struct(i).f_s_beat(j).signal;
-        a = max(numel(temp1),numel(temp2));
-        temp1(end+1:a)=nan;
-        temp2(end+1:a)=nan;
-        BlandAltman(temp1,temp2,3);
-    end
-end 
+% for i=1:3
+%     for j = 1:(length(struct(i).f_s_beat))
+%         temp1 = struct(i).s_beat(j).signal;
+%         temp2 = struct(i).f_s_beat(j).signal;
+%         a = max(numel(temp1),numel(temp2));
+%         temp1(end+1:a)=nan;
+%         temp2(end+1:a)=nan;
+%         BlandAltman(temp1,temp2,3);
+%     end
+% end 
 
 %% 10.Average filtered single beats
 
