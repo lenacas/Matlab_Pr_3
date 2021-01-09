@@ -130,8 +130,12 @@ for i=1:3
 end 
 
 % The differences are small. The mean of differences are for all three
-% patients in a range of milli seconds or even smaller (ejection time for #3). It shows,
-% that the used filter keeps the reliability of the original data
+% patients in a range of milli seconds or even smaller (systolic peak of #2
+% and ejection time of #3).
+% All data differences are in the confidence intervall of 95%.
+% It shows, that the used filter keeps the reliability of the original
+% data. 
+% For a better comparison, more data points should be used here.
 
 %% 10.Average filtered single beats
 
