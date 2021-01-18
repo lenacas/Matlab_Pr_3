@@ -76,9 +76,14 @@ for i=1:3
     end    
 end
 
+% was passiert mit 1. und letzten Datenpunkt? Zeitliche Verschiebung
+
+
 %% 5.+ 6. Find and save Systolic peak and Dicrotic notch
 % Systolic peak = abs Maximum
 % Dicrotic notch equivalent to first local minimum after systolic peak
+
+% time fängt bei 0 an, loc bei 1 (t= 0.004 s)
 
 peakprominence=3; 
 for i = 1:3
@@ -169,6 +174,9 @@ for i=1:3
     InflectionPoint(i)=temp(1);
     %first negative value assumed as deflection point index, else subtract 
     %one and take the first positive value
+    
+    % verschiebung?? Welche Datenpunkte gehen verloren?? Wie muss man
+    % verschieben?
 end
 
 %% 12. Plot Mean beat signal and Triangle
