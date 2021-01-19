@@ -21,30 +21,60 @@ for i=1:3
 struct(i).filtered_signal= filtfilt(temp.Numerator,1,struct(i).pressure);
 end
 
+% Plots
+for i=1:3
+    subplot(3,1,i)
+    plot(t,struct(i).pressure);
+    hold on;
+    plot(t,struct(i).filtered_signal);
+    title("Pulsewave Signal #"+num2str(i))
+    legend('unfiltered signal','filtered signal')
+    xlabel('time (s)')
+end
+
 %% 2.Split signal into beats
 % using findpeaks, we detect the lowest values, where we assume a single
 % beat starts.
 
 % Split Filtered Signal
+figure;
+
 for i = 1:3
     [peak, location_f] = findpeaks(-struct(i).filtered_signal,t,'MinPeakDistance', 0.45);
     location_f = location_f *fs/1;
+    
+    subplot(3,1,i)
    
 for j = 1:(length(location_f)-1)
     %filtered single beats creation and saved to struct
     struct(i).f_s_beat(j).signal = struct(i).filtered_signal(round(location_f(j)):round(location_f(j+1))); % round to create integer
     struct(i).f_s_beat(j).time = (0:length(struct(i).f_s_beat(j).signal)-1) *1/fs;
+    %plot
+    plot(struct(i).f_s_beat(j).time,struct(i).f_s_beat(j).signal);
+    title("Split beats (filtered signal) #"+num2str(i));
+    xlabel('time (s)');
+    hold on;
+end
 end
 
+figure;
+
+for i=1:3
 % Split Unfiltered Signal (task 8.)
     [peak, location] = findpeaks(-struct(i).pressure,t,'MinPeakDistance', 0.5);
     location = location *fs/1;
+    subplot(3,1,i)
 
     if length(location_f) == length(location)
         for j = 1:(length(location)-1)
     %filtered single beats creation by cutting at lowest values  and saved to struct
     struct(i).s_beat(j).signal = struct(i).pressure(round(location(j)):round(location(j+1))); % round to create integer
     struct(i).s_beat(j).time = (0:length(struct(i).s_beat(j).signal)-1) *1/fs;
+    % plot
+    plot(struct(i).s_beat(j).time,struct(i).s_beat(j).signal);
+    title("Split beats (original signal) #"+num2str(i));
+    xlabel('time (s)');
+    hold on;
         end
     end
     if length(location_f) ~= length(location)
@@ -52,6 +82,11 @@ end
     %filtered single beats creation by cutting at lowest values  and saved to struct
     struct(i).s_beat(j).signal = struct(i).pressure(round(location(j)):round(location(j+1))); % round to create integer
     struct(i).s_beat(j).time = (0:length(struct(i).s_beat(j).signal)-1) *1/fs;
+    % plot
+    plot(struct(i).s_beat(j).time,struct(i).s_beat(j).signal);
+    title("Split beats (original signal) #"+num2str(i));
+    xlabel('time (s)');
+    hold on;
         end 
     end
 end 
@@ -60,9 +95,17 @@ end
 %% 3. Scale signal
 % by function: subtract minimum, divide by max, multiply with delta bp, 
 % add diastolic bp;
+figure;
 for i=1:3
+    subplot(3,1,i)
     for j = 1:(length(struct(i).f_s_beat))  
-      struct(i).f_s_beat(j).signal= scale_to_bp(struct(i).f_s_beat(j).signal,struct(i).sbp,struct(i).dbp);     
+      struct(i).f_s_beat(j).signal= scale_to_bp(struct(i).f_s_beat(j).signal,struct(i).sbp,struct(i).dbp);
+      % plot
+    plot(struct(i).f_s_beat(j).time,struct(i).f_s_beat(j).signal);
+    title("Scaled split beats (filtered signal) #"+num2str(i));
+    xlabel('time (s)');
+    ylabel('pressure (mmHg)')
+    hold on;
     end
 end
 
@@ -70,9 +113,17 @@ end
 % ASK! Order of assignment keept, but wouldnt it be smarter to filter and
 % subsequently scale in order to avoid value distortion by the filter
 F=[1,1,1]/3;
+figure;
 for i=1:3
+    subplot(3,1,i)
     for j = 1:(length(struct(i).f_s_beat)-1)
        struct(i).f_s_beat(j).signal = filter(F,1,struct(i).f_s_beat(j).signal- struct(i).f_s_beat(j).signal(1))+struct(i).f_s_beat(j).signal(1);
+       % plot
+       plot(struct(i).f_s_beat(j).time,struct(i).f_s_beat(j).signal);
+    title("After Three-point-moving-average filter #"+num2str(i));
+    xlabel('time (s)');
+    ylabel('pressure (mmHg)')
+    hold on;
     end    
 end
 
@@ -171,7 +222,7 @@ end
 for i=1:3
     %find values were 2nd Derivative is negative
     temp=find(diff(diff(struct(i).mean))<0);
-    InflectionPoint(i)=temp(1);
+    InflectionPoint(i)=temp(2);
     %first negative value assumed as deflection point index, else subtract 
     %one and take the first positive value
     
